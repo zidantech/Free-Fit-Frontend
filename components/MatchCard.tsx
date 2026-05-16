@@ -12,7 +12,7 @@ interface Team {
 
 interface MatchCardProps {
   id: string;
-  teams: [Team, Team];
+  teams: Team[];  // Changed from [Team, Team] to Team[]
   status: "live" | "upcoming" | "ended";
   league?: string;
   startTime?: string;
@@ -33,6 +33,10 @@ export default function MatchCard({
 }: MatchCardProps) {
   const isLive = status === "live";
   const isEnded = status === "ended";
+
+  // Ensure we have at least 2 teams
+  const homeTeam = teams[0] || { id: "", name: "TBD", logo: "" };
+  const awayTeam = teams[1] || { id: "", name: "TBD", logo: "" };
 
   return (
     <div className={`bg-[#0f1535] border border-cyan-500/20 rounded-xl overflow-hidden hover:border-cyan-500/50 transition-all ${className}`}>
@@ -66,12 +70,13 @@ export default function MatchCard({
           {/* Home Team */}
           <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
             <img
-              src={teams[0].logo}
-              alt={teams[0].name}
+              src={homeTeam.logo || "/placeholder-team.png"}
+              alt={homeTeam.name}
               className="w-10 h-10 sm:w-14 sm:h-14 object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).src = "https://via.placeholder.com/56?text=" + homeTeam.name.charAt(0); }}
             />
             <span className="text-white text-xs sm:text-sm font-medium text-center truncate w-full">
-              {teams[0].name}
+              {homeTeam.name}
             </span>
           </div>
 
@@ -79,7 +84,7 @@ export default function MatchCard({
           <div className="flex flex-col items-center px-2 sm:px-4 shrink-0">
             {isLive || isEnded ? (
               <span className="text-xl sm:text-3xl font-bold text-white font-mono">
-                {teams[0].score ?? 0} - {teams[1].score ?? 0}
+                {homeTeam.score ?? 0} - {awayTeam.score ?? 0}
               </span>
             ) : (
               <span className="text-lg sm:text-2xl font-bold text-cyan-400">VS</span>
@@ -89,12 +94,13 @@ export default function MatchCard({
           {/* Away Team */}
           <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
             <img
-              src={teams[1].logo}
-              alt={teams[1].name}
+              src={awayTeam.logo || "/placeholder-team.png"}
+              alt={awayTeam.name}
               className="w-10 h-10 sm:w-14 sm:h-14 object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).src = "https://via.placeholder.com/56?text=" + awayTeam.name.charAt(0); }}
             />
             <span className="text-white text-xs sm:text-sm font-medium text-center truncate w-full">
-              {teams[1].name}
+              {awayTeam.name}
             </span>
           </div>
         </div>
