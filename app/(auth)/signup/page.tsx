@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authAPI } from "@/lib/api";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 
 export default function SignUp() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -19,14 +21,12 @@ export default function SignUp() {
     setLoading(true);
     setError("");
 
-    // Validate passwords match
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       setLoading(false);
       return;
     }
 
-    // Validate password length
     if (password.length < 8) {
       setError("Password must be at least 8 characters");
       setLoading(false);
@@ -35,8 +35,6 @@ export default function SignUp() {
 
     try {
       const data = await authAPI.register(email, password, confirmPassword);
-
-      // Show success and redirect to login
       alert(data.message || "Registration successful! Please login.");
       router.push(data.next || "/signin");
     } catch (err: any) {
@@ -48,26 +46,28 @@ export default function SignUp() {
 
   return (
     <main 
-      className="min-h-screen flex items-center justify-center px-6 relative"
+      className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 relative"
       style={{
         backgroundImage: `url('https://images.unsplash.com/photo-1629977007371-0ba395424741?w=1920&q=80')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
     >
-      {/* Overlay */}
       <div className="absolute inset-0 bg-[#0a0e27]/70" />
 
       <div className="relative z-10 w-full max-w-md">
-        {/* Logo */}
-        <Link href="/" className="block text-2xl font-bold text-cyan-400 tracking-wide mb-8">
+        <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-cyan-400 transition-colors mb-6 sm:mb-8 text-sm">
+          <ArrowLeft className="w-4 h-4" />
+          Back to home
+        </Link>
+
+        <Link href="/" className="block text-2xl sm:text-3xl font-bold text-cyan-400 tracking-wide mb-6 sm:mb-8">
           Free-fit.com
         </Link>
 
-        {/* Form Card */}
-        <div className="bg-[#0a0e27]/80 backdrop-blur-sm rounded-lg p-8 border border-white/10">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white">Create an account</h1>
+        <div className="bg-[#0a0e27]/80 backdrop-blur-sm rounded-xl p-6 sm:p-8 border border-white/10">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-3xl sm:text-4xl font-bold text-white">Create an account</h1>
           </div>
 
           {error && (
@@ -76,67 +76,76 @@ export default function SignUp() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             <div>
-              <label className="block text-white text-lg font-semibold mb-2">Name</label>
+              <label className="block text-white text-base sm:text-lg font-semibold mb-2">Name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your name"
                 required
-                className="w-full px-4 py-3 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors"
+                className="w-full px-4 py-3 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors text-sm sm:text-base"
               />
             </div>
 
             <div>
-              <label className="block text-white text-lg font-semibold mb-2">Email</label>
+              <label className="block text-white text-base sm:text-lg font-semibold mb-2">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
-                className="w-full px-4 py-3 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors"
+                className="w-full px-4 py-3 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors text-sm sm:text-base"
               />
             </div>
 
             <div>
-              <label className="block text-white text-lg font-semibold mb-2">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password (min 8 chars)"
-                required
-                minLength={8}
-                className="w-full px-4 py-3 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors"
-              />
+              <label className="block text-white text-base sm:text-lg font-semibold mb-2">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password (min 8 chars)"
+                  required
+                  minLength={8}
+                  className="w-full px-4 py-3 pr-12 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors text-sm sm:text-base"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
             <div>
-              <label className="block text-white text-lg font-semibold mb-2">Confirm Password</label>
+              <label className="block text-white text-base sm:text-lg font-semibold mb-2">Confirm Password</label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm your password"
                 required
-                className="w-full px-4 py-3 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors"
+                className="w-full px-4 py-3 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors text-sm sm:text-base"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-white text-[#0a0e27] rounded-full font-bold text-lg hover:bg-gray-200 transition-colors mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-white text-[#0a0e27] rounded-full font-bold text-base sm:text-lg hover:bg-gray-200 transition-colors mt-2 sm:mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-white font-medium mb-4">Or continue with</p>
+            <p className="text-white font-medium mb-4 text-sm sm:text-base">Or continue with</p>
             <button className="w-10 h-10 mx-auto flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors">
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
@@ -147,7 +156,7 @@ export default function SignUp() {
             </button>
           </div>
 
-          <p className="mt-6 text-center text-gray-400">
+          <p className="mt-6 text-center text-gray-400 text-sm sm:text-base">
             Already have an account?
             <Link href="/signin" className="text-white font-semibold hover:text-cyan-400 transition-colors ml-1">
               Login
