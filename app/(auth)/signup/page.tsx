@@ -2,15 +2,48 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authAPI } from "@/lib/api";
 
 export default function SignUp() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle signup logic
+    setLoading(true);
+    setError("");
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
+    // Validate password length
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const data = await authAPI.register(email, password, confirmPassword);
+
+      // Show success and redirect to login
+      alert(data.message || "Registration successful! Please login.");
+      router.push(data.next || "/signin");
+    } catch (err: any) {
+      setError(err.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,6 +70,12 @@ export default function SignUp() {
             <h1 className="text-4xl font-bold text-white">Create an account</h1>
           </div>
 
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-white text-lg font-semibold mb-2">Name</label>
@@ -44,6 +83,8 @@ export default function SignUp() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your name"
+                required
                 className="w-full px-4 py-3 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors"
               />
             </div>
@@ -54,6 +95,8 @@ export default function SignUp() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                required
                 className="w-full px-4 py-3 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors"
               />
             </div>
@@ -64,15 +107,31 @@ export default function SignUp() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password (min 8 chars)"
+                required
+                minLength={8}
+                className="w-full px-4 py-3 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors"
+              />
+            </div>
+
+            <div>
+              <label className="block text-white text-lg font-semibold mb-2">Confirm Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your password"
+                required
                 className="w-full px-4 py-3 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 bg-white text-[#0a0e27] rounded-full font-bold text-lg hover:bg-gray-200 transition-colors mt-4"
+              disabled={loading}
+              className="w-full py-3 bg-white text-[#0a0e27] rounded-full font-bold text-lg hover:bg-gray-200 transition-colors mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create account
+              {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
 

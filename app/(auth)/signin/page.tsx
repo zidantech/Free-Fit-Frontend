@@ -2,15 +2,37 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authAPI } from "@/lib/api";
 
 export default function SignIn() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic
+    setLoading(true);
+    setError("");
+
+    try {
+      const data = await authAPI.login(email, password);
+
+      // Store remember me preference
+      if (typeof window !== "undefined") {
+        localStorage.setItem("remember_me", String(rememberMe));
+      }
+
+      // Redirect to home page after successful login
+      router.push(data.next || "/");
+    } catch (err: any) {
+      setError(err.message || "Login failed. Please check your credentials.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -28,6 +50,12 @@ export default function SignIn() {
             <p className="text-gray-400">Login in and enjoy streaming in HD</p>
           </div>
 
+          {error && (
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-white text-lg font-semibold mb-2">Email</label>
@@ -36,6 +64,7 @@ export default function SignIn() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Input your email"
+                required
                 className="w-full px-4 py-3 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors"
               />
             </div>
@@ -47,6 +76,8 @@ export default function SignIn() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your Password"
+                required
+                minLength={8}
                 className="w-full px-4 py-3 bg-[#3a3a3a] border border-cyan-400/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-400 transition-colors"
               />
             </div>
@@ -68,9 +99,10 @@ export default function SignIn() {
 
             <button
               type="submit"
-              className="w-full py-3 bg-gray-300 text-[#0a0e27] rounded-full font-bold text-lg hover:bg-white transition-colors"
+              disabled={loading}
+              className="w-full py-3 bg-gray-300 text-[#0a0e27] rounded-full font-bold text-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 

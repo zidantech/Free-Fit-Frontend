@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { Play } from "lucide-react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
+import { authAPI, streamsAPI } from "@/lib/api";
 
 const sportsImages = [
   {
@@ -48,6 +50,31 @@ const sportsImages = [
 ];
 
 export default function Home() {
+  const [featuredStreams, setFeaturedStreams] = useState<any[]>([]);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check auth status
+    setIsAuthenticated(authAPI.isAuthenticated());
+
+    // Fetch featured streams from API
+    const fetchStreams = async () => {
+      try {
+        const data = await streamsAPI.getFeatured();
+        if (data?.data) {
+          setFeaturedStreams(data.data);
+        }
+      } catch (err) {
+        console.log("Featured streams not available yet");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStreams();
+  }, []);
+
   return (
     <main className="min-h-screen bg-[#0a0e27]">
       <Navbar />
@@ -56,11 +83,29 @@ export default function Home() {
       <section className="pt-24 px-6 pb-12">
         <div className="max-w-6xl mx-auto">
           <div className="relative w-full aspect-video bg-gray-800 rounded-lg overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e27] via-transparent to-transparent" />
+            {featuredStreams.length > 0 ? (
+              <>
+                <img 
+                  src={featuredStreams[0].thumbnail || "/placeholder.jpg"} 
+                  alt={featuredStreams[0].title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e27] via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h2 className="text-2xl font-bold text-white mb-2">{featuredStreams[0].title}</h2>
+                  <p className="text-gray-300">{featuredStreams[0].sport?.name} • {featuredStreams[0].viewers?.toLocaleString()} viewers</p>
+                </div>
+              </>
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e27] via-transparent to-transparent" />
+            )}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-20 h-20 bg-cyan-400 rounded-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-lg shadow-cyan-400/30">
+              <Link 
+                href={isAuthenticated ? "/live" : "/signin"}
+                className="w-20 h-20 bg-cyan-400 rounded-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-lg shadow-cyan-400/30"
+              >
                 <Play className="w-10 h-10 text-[#0a0e27] ml-1" fill="currentColor" />
-              </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -86,18 +131,65 @@ export default function Home() {
           <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
             Stream the biggest matches and events from across the continent in HD
           </p>
-          <Link 
-            href="/signup"
-            className="inline-block px-12 py-3 bg-[#5a5a5a] text-cyan-400 rounded-full font-semibold text-lg hover:bg-[#6a6a6a] transition-colors tracking-wide"
-          >
-            Get Started
-          </Link>
+
+          {isAuthenticated ? (
+            <Link 
+              href="/live"
+              className="inline-block px-12 py-3 bg-cyan-400 text-[#0a0e27] rounded-full font-semibold text-lg hover:bg-cyan-300 transition-colors tracking-wide"
+            >
+              Watch Now
+            </Link>
+          ) : (
+            <Link 
+              href="/signup"
+              className="inline-block px-12 py-3 bg-[#5a5a5a] text-cyan-400 rounded-full font-semibold text-lg hover:bg-[#6a6a6a] transition-colors tracking-wide"
+            >
+              Get Started
+            </Link>
+          )}
         </div>
       </section>
+
+      {/* Featured Streams Section */}
+      {featuredStreams.length > 0 && (
+        <section className="py-16 px-6">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold text-white mb-8 text-center">Featured Live Streams</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredStreams.map((stream) => (
+                <Link 
+                  key={stream.id} 
+                  href={`/streams/${stream.id}`}
+                  className="group relative rounded-lg overflow-hidden bg-gray-800 border border-cyan-400/20 hover:border-cyan-400/50 transition-all"
+                >
+                  <div className="aspect-video relative">
+                    <img 
+                      src={stream.thumbnail} 
+                      alt={stream.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 left-3 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded uppercase">
+                      Live
+                    </div>
+                    <div className="absolute bottom-3 right-3 px-2 py-1 bg-black/60 text-white text-xs rounded">
+                      {stream.viewers?.toLocaleString()} viewers
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-white font-semibold mb-1">{stream.title}</h3>
+                    <p className="text-gray-400 text-sm">{stream.sport?.name} • {stream.league?.name}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Sports Grid Section */}
       <section className="py-16 px-6">
         <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-white mb-8 text-center">All Sports</h2>
           <div className="grid grid-cols-4 gap-4 auto-rows-[200px]">
             {sportsImages.map((image, index) => (
               <div 
@@ -110,6 +202,9 @@ export default function Home() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-[#0a0e27]/40 group-hover:bg-[#0a0e27]/20 transition-colors" />
+                <div className="absolute bottom-3 left-3">
+                  <span className="text-white font-semibold text-sm">{image.alt}</span>
+                </div>
               </div>
             ))}
           </div>
