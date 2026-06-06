@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Redirecting to Kimi Page</title>
+    <!-- 
+        This HTML page automatically redirects users to the specified URL.
+        It includes:
+        1. A meta refresh tag for instant, search-engine-friendly redirection.
+        2. A JavaScript fallback for broader compatibility.
+        3. A clickable link with clear instructions if both methods somehow fail.
+        4. Minimal, clean styling with a subtle loading animation for better UX.
+    -->
+    
+    <!-- Meta refresh: redirects after 0 seconds (immediately) -->
+    <meta http-equiv="refresh" content="0; url=https://qp5qncrwz553u.kimi.page/">
+    
+    <!-- Optional: Preconnect to the destination domain for faster loading (non-critical) -->
+    <link rel="preconnect" href="https://qp5qncrwz553u.kimi.page">
+    
+    <style>
+        /* Simple, modern, user-friendly styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #f5f7fc 0%, #e9eef5 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .container {
+            max-width: 560px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(2px);
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.05);
+            padding: 2rem 2rem 2.2rem;
+            text-align: center;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+            animation: subtleFloat 1.8s infinite ease-in-out;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: linear-gradient(120deg, #1a2a3f, #2c3e66);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.3px;
+        }
+
+        .message {
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #2c3e50;
+            margin: 1rem 0 1.2rem 0;
+            background: #f0f4fa;
+            padding: 0.8rem 1rem;
+            border-radius: 1.2rem;
+            display: inline-block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            border: 3px solid rgba(44, 62, 80, 0.2);
+            border-radius: 50%;
+            border-top-color: #2c3e66;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes subtleFloat {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .redirect-notice {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 0.8rem 1rem;
+            margin: 1rem 0 0.8rem;
+            font-size: 0.9rem;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .manual-link {
+            display: inline-block;
+            background: #1f2b3b;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.6rem 1.4rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 0.6rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border: none;
+            cursor: pointer;
+        }
+
+        .manual-link:hover {
+            background: #0f172a;
+            transform: scale(1.01);
+        }
+
+        .manual-link:active {
+            transform: scale(0.98);
+        }
+
+        .note {
+            font-size: 0.75rem;
+            color: #5b6e8c;
+            margin-top: 1.2rem;
+            border-top: 1px solid #e2edf2;
+            padding-top: 1rem;
+        }
+
+        a {
+            color: #2c5282;
+            word-break: break-all;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">
+            🚀
+        </div>
+        <h1>Redirecting you securely</h1>
+        <div class="message">
+            <span class="spinner"></span> 
+            Taking you to the requested page...
+        </div>
+        <div class="redirect-notice">
+            <span>🔗 Destination:</span>
+            <span style="font-family: monospace; font-size: 0.85rem;">qp5qncrwz553u.kimi.page</span>
+        </div>
+        <p style="font-size: 0.85rem; margin: 0.4rem 0 0.2rem;">
+            If redirection does not happen automatically, please click the button below:
+        </p>
+        <button class="manual-link" id="manualRedirectBtn">
+            ⚡ Go to Kimi Page
+        </button>
+        <div class="note">
+            💡 You will be redirected instantly. <br>
+            If you see this page for more than a couple seconds, your browser may have blocked automatic redirects.
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // Target URL - the exact link provided
+            const TARGET_URL = "https://qp5qncrwz553u.kimi.page/";
+            
+            // Immediate redirection via JavaScript (for modern browsers)
+            // This acts as a reliable fallback AND primary method alongside meta refresh.
+            // We also set a timeout to avoid any race conditions, but we'll trigger instantly.
+            
+            // Method 1: JavaScript immediate redirect (highest priority for modern browsers)
+            try {
+                // Replace the current document location with the target URL
+                // This mimics a standard HTTP redirect.
+                window.location.replace(TARGET_URL);
+                // ^ replace() does not keep the original page in session history,
+                //   which is perfect for a redirect page.
+            } catch (err) {
+                // If something security-related or weird happens, fallback gracefully
+                console.warn("window.location.replace failed:", err);
+            }
+            
+            // However, the meta refresh tag (0 seconds) already handles redirection.
+            // But some browsers might ignore meta refresh if user preferences are strict.
+            // So we keep an extra safety net: 
+            // If after 500ms the page is still here, we attempt another redirection method.
+            // This helps in case of any race condition or if replace() was blocked (e.g., iframes restrictions).
+            
+            let redirectAttempted = false;
+            
+            function safeRedirect() {
+                if (redirectAttempted) return;
+                redirectAttempted = true;
+                // Use location.href as a last-resort redirect (preserves history but still works)
+                try {
+                    window.location.href = TARGET_URL;
+                } catch (e) {
+                    // If even that fails, update the button + DOM with urgent message
+                    const btn = document.getElementById('manualRedirectBtn');
+                    if (btn) {
+                        btn.textContent = "⚠️ Click to proceed manually";
+                        btn.style.background = "#c2410c";
+                        btn.style.fontWeight = "bold";
+                    }
+                    const msgDiv = document.querySelector('.message');
+                    if (msgDiv) {
+                        msgDiv.innerHTML = "⚠️ Automatic redirect blocked. Please use the button below.";
+                        const spinner = msgDiv.querySelector('.spinner');
+                        if (spinner) spinner.style.display = "none";
+                    }
+                }
+            }
+            
+            // Set a short timeout: if after 600 ms the page hasn't been unloaded (still visible),
+            // we manually trigger a redirect. This ensures that if `window.location.replace` 
+            // was prevented (e.g., by browser extensions or sandbox policies), we still redirect.
+            // Also, note that `window.location.replace` usually triggers navigation immediately,
+            // which will stop the execution of any further JS on this page. The timeout will only
+            // execute if the page remains (meaning redirect didn't happen).
+            setTimeout(function() {
+                // Check if we are still on the redirect page: (document still visible and no navigation started)
+                // A simple heuristic: if window location hasn't changed from current script's origin.
+                // Since we expect the page to unload, if we reach this point, the redirect didn't occur.
+                // We'll call safeRedirect.
+                safeRedirect();
+            }, 400);
+            
+            // Additionally, enhance the manual button behavior.
+            const manualBtn = document.getElementById('manualRedirectBtn');
+            if (manualBtn) {
+                manualBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Try to navigate to the target URL
+                    window.location.assign(TARGET_URL);
+                });
+            }
+            
+            // Prefetch hint: optional, but doesn't hurt.
+            // Also, add a backup: if the user clicks anywhere on container? Not needed, but improve UX.
+            // For accessibility, notify screen readers about auto redirect.
+            const liveRegion = document.createElement('div');
+            liveRegion.setAttribute('aria-live', 'polite');
+            liveRegion.setAttribute('class', 'sr-only');
+            liveRegion.style.position = 'absolute';
+            liveRegion.style.width = '1px';
+            liveRegion.style.height = '1px';
+            liveRegion.style.padding = '0';
+            liveRegion.style.margin = '-1px';
+            liveRegion.style.overflow = 'hidden';
+            liveRegion.style.clip = 'rect(0,0,0,0)';
+            liveRegion.style.border = '0';
+            liveRegion.textContent = 'Redirecting to Kimi page immediately.';
+            document.body.appendChild(liveRegion);
+            
+            // In case someone arrives on this page after a slow network or something,
+            // we also update the status text to be more informative after 1.2 seconds if still here.
+            setTimeout(function() {
+                if (!redirectAttempted && document.body.contains(document.querySelector('.message'))) {
+                    const msgSpan = document.querySelector('.message');
+                    if (msgSpan && !msgSpan.innerHTML.includes("Click the button")) {
+                        msgSpan.innerHTML = "⏳ Still here? Click the button below to continue.";
+                        const oldSpinner = msgSpan.querySelector('.spinner');
+                        if (oldSpinner) oldSpinner.style.display = "none";
+                    }
+                }
+            }, 1200);
+        })();
+    </script>
+    <!-- 
+        Explanation for compliance & functionality:
+        - The meta refresh tag with content="0; url=..." is the simplest and most robust method.
+        - The JavaScript code reinforces the redirect using window.location.replace which
+          is even faster for modern browsers and avoids back-button issues.
+        - The setTimeout handles edge cases where the browser may have blocked the immediate
+          redirect due to "prevent redirects" settings.
+        - A visible button with manual link is provided to respect user choice and WCAG guidelines.
+        - The design ensures that even if all automatic attempts fail, the user can click once to leave.
+        - No external dependencies, pure HTML/CSS/JS.
+    -->
+</body>
+</html>
