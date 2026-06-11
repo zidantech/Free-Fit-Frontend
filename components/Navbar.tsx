@@ -1,18 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, Tv, Sparkles, LayoutGrid, UserCircle } from "lucide-react";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
-  const navLinks = [
-    { href: "/#live", label: "Live" },
-    { href: "/#highlights", label: "Highlights" },
-    { href: "/#categories", label: "Categories" },
+  const isActive = (href: string) => pathname === href;
+
+  const mainNavLinks = [
+    { href: "/home", label: "Live", icon: Tv },
+    { href: "/highlights", label: "Highlights", icon: Sparkles },
+    { href: "/categories", label: "Categories", icon: LayoutGrid },
   ];
 
   return (
@@ -21,20 +25,28 @@ export default function Navbar() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="text-xl sm:text-2xl font-bold text-cyan-400 tracking-wide shrink-0">
-            Free-fit.com
+            Freefit.com
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6 lg:gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="text-white hover:text-cyan-400 transition-colors font-medium uppercase text-xs lg:text-sm tracking-wider"
-              >
-                {link.label}
-              </Link>
-            ))}
+            {mainNavLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className={`flex items-center gap-1.5 font-medium uppercase text-xs lg:text-sm tracking-wider transition-colors ${
+                    isActive(link.href)
+                      ? "text-cyan-400"
+                      : "text-white hover:text-cyan-400"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Desktop Auth */}
@@ -42,10 +54,14 @@ export default function Navbar() {
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
                 <Link
-                  href="/home"
-                  className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 text-cyan-400 rounded-full hover:bg-cyan-500/30 transition-all text-sm font-medium"
+                  href="/profile"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all text-sm font-medium ${
+                    isActive("/profile")
+                      ? "bg-cyan-500/30 text-cyan-400 border border-cyan-400/50"
+                      : "bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30"
+                  }`}
                 >
-                  <User className="w-4 h-4" />
+                  <UserCircle className="w-4 h-4" />
                   <span className="max-w-[100px] truncate">{user?.name || "Account"}</span>
                 </Link>
                 <button
@@ -78,26 +94,32 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 border-t border-cyan-500/20 pt-4 space-y-3 animate-in slide-in-from-top-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-white hover:text-cyan-400 transition-colors font-medium uppercase text-sm tracking-wider py-2"
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="md:hidden mt-4 pb-4 border-t border-cyan-500/20 pt-4 space-y-2">
+            {isAuthenticated && mainNavLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-2 font-medium uppercase text-sm tracking-wider py-2 transition-colors ${
+                    isActive(link.href) ? "text-cyan-400" : "text-white hover:text-cyan-400"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {link.label}
+                </Link>
+              );
+            })}
             <div className="pt-3 border-t border-cyan-500/20">
               {isAuthenticated ? (
                 <div className="space-y-3">
                   <Link
-                    href="/home"
+                    href="/profile"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-2 text-cyan-400 font-medium py-2"
                   >
-                    <User className="w-5 h-5" />
+                    <UserCircle className="w-5 h-5" />
                     My Account
                   </Link>
                   <button

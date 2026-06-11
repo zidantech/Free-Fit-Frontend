@@ -2,108 +2,229 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { authAPI, streamsAPI, matchesAPI, sportsAPI } from "@/lib/api";
+import { authAPI, streamsAPI, matchesAPI, scheduleAPI, sportsAPI } from "@/lib/api";
 import Navbar from "@/components/Navbar";
 import VideoPlayer from "@/components/VideoPlayer";
 import MatchCard from "@/components/MatchCard";
-import SportSelector from "@/components/SportSelector";
-import { 
-  Play, Trophy, Calendar, Clock, ChevronRight, 
-  Flame, TrendingUp, Star, Loader2 
+import {
+  Play, Trophy, Calendar, Clock, ChevronRight,
+  Flame, TrendingUp, Loader2, Tv, History, Timer
 } from "lucide-react";
 import Link from "next/link";
 
-// Demo data for when API is not available
-const demoLiveMatches = [
-  {
-    id: "1",
-    teams: [
-      { id: "t1", name: "Arsenal", logo: "https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg", score: 2 },
-      { id: "t2", name: "Man United", logo: "https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg", score: 1 }
-    ],
-    status: "live" as const,
-    league: "Premier League",
-    streamUrl: "https://example.com/stream1"
-  },
-  {
-    id: "2",
-    teams: [
-      { id: "t3", name: "Real Madrid", logo: "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg", score: 3 },
-      { id: "t4", name: "Barcelona", logo: "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg", score: 2 }
-    ],
-    status: "live" as const,
-    league: "La Liga",
-    streamUrl: "https://example.com/stream2"
-  },
-  {
-    id: "3",
-    teams: [
-      { id: "t5", name: "Liverpool", logo: "https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg", score: 1 },
-      { id: "t6", name: "Chelsea", logo: "https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg", score: 1 }
-    ],
-    status: "live" as const,
-    league: "Premier League",
-    streamUrl: "https://example.com/stream3"
-  }
-];
+// ---- Demo Data (fallback when API fails) ----
 
-const demoPreviousMatches = [
-  {
-    id: "4",
-    teams: [
-      { id: "t7", name: "Bayern Munich", logo: "https://upload.wikimedia.org/wikipedia/commons/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg", score: 4 },
-      { id: "t8", name: "Dortmund", logo: "https://upload.wikimedia.org/wikipedia/commons/6/67/Borussia_Dortmund_logo.svg", score: 2 }
-    ],
-    status: "ended" as const,
-    league: "Bundesliga"
-  },
-  {
-    id: "5",
-    teams: [
-      { id: "t9", name: "Juventus", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a8/Juventus_FC_-_pictogram_black_%28Italy%2C_2017%29.svg", score: 2 },
-      { id: "t10", name: "AC Milan", logo: "https://upload.wikimedia.org/wikipedia/commons/d/d0/AC_Milan_logo.svg", score: 1 }
-    ],
-    status: "ended" as const,
-    league: "Serie A"
-  },
-  {
-    id: "6",
-    teams: [
-      { id: "t11", name: "PSG", logo: "https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg", score: 3 },
-      { id: "t12", name: "Marseille", logo: "https://upload.wikimedia.org/wikipedia/commons/4/43/Olympique_de_Marseille_logo.svg", score: 0 }
-    ],
-    status: "ended" as const,
-    league: "Ligue 1"
-  },
-  {
-    id: "7",
-    teams: [
-      { id: "t13", name: "Man City", logo: "https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg", score: 2 },
-      { id: "t14", name: "Tottenham", logo: "https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg", score: 2 }
-    ],
-    status: "ended" as const,
-    league: "Premier League"
-  }
-];
+const sportDisplayNames: Record<string, string> = {
+  football: "Football",
+  soccer: "Football",
+  tennis: "Tennis",
+  basketball: "Basketball",
+  cricket: "Cricket",
+  hockey: "Hockey",
+  golf: "Golf",
+  baseball: "Baseball",
+  wrestling: "Wrestling",
+  "formula-1": "Formula 1",
+  boxing: "Boxing",
+  rugby: "Rugby",
+  athletics: "Athletics",
+};
 
-const defaultSports = [
-  { id: "1", name: "Football", slug: "football", icon: "https://cdn-icons-png.flaticon.com/128/1099/1099672.png" },
-  { id: "2", name: "Tennis", slug: "tennis", icon: "https://cdn-icons-png.flaticon.com/128/2151/2151115.png" },
-  { id: "3", name: "Basketball", slug: "basketball", icon: "https://cdn-icons-png.flaticon.com/128/317/317709.png" },
-  { id: "4", name: "Cricket", slug: "cricket", icon: "https://cdn-icons-png.flaticon.com/128/1099/1099683.png" },
-  { id: "5", name: "Hockey", slug: "hockey", icon: "https://cdn-icons-png.flaticon.com/128/1099/1099692.png" },
-  { id: "6", name: "Golf", slug: "golf", icon: "https://cdn-icons-png.flaticon.com/128/1099/1099710.png" },
-  { id: "7", name: "Baseball", slug: "baseball", icon: "https://cdn-icons-png.flaticon.com/128/1099/1099695.png" },
-  { id: "8", name: "Formula 1", slug: "formula-1", icon: "https://cdn-icons-png.flaticon.com/128/2964/2964514.png" },
-];
+const demoLiveMatches: Record<string, any[]> = {
+  football: [
+    {
+      id: "l1",
+      teams: [
+        { id: "t1", name: "Arsenal", logo: "https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg", score: 2 },
+        { id: "t2", name: "Man United", logo: "https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg", score: 1 }
+      ],
+      status: "live" as const,
+      league: "Premier League",
+      streamUrl: "https://example.com/stream1"
+    },
+    {
+      id: "l2",
+      teams: [
+        { id: "t3", name: "Real Madrid", logo: "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg", score: 3 },
+        { id: "t4", name: "Barcelona", logo: "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg", score: 2 }
+      ],
+      status: "live" as const,
+      league: "La Liga",
+      streamUrl: "https://example.com/stream2"
+    },
+    {
+      id: "l3",
+      teams: [
+        { id: "t5", name: "Liverpool", logo: "https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg", score: 1 },
+        { id: "t6", name: "Chelsea", logo: "https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg", score: 1 }
+      ],
+      status: "live" as const,
+      league: "Premier League",
+      streamUrl: "https://example.com/stream3"
+    },
+  ],
+  tennis: [
+    {
+      id: "lt1",
+      teams: [
+        { id: "tt1", name: "Djokovic", logo: "https://via.placeholder.com/56?text=ND", score: 6 },
+        { id: "tt2", name: "Alcaraz", logo: "https://via.placeholder.com/56?text=CA", score: 4 }
+      ],
+      status: "live" as const,
+      league: "Wimbledon Final",
+      streamUrl: "https://example.com/stream-tennis"
+    },
+  ],
+  basketball: [
+    {
+      id: "lb1",
+      teams: [
+        { id: "bt1", name: "Lakers", logo: "https://via.placeholder.com/56?text=LAL", score: 98 },
+        { id: "bt2", name: "Warriors", logo: "https://via.placeholder.com/56?text=GSW", score: 95 }
+      ],
+      status: "live" as const,
+      league: "NBA",
+      streamUrl: "https://example.com/stream-nba"
+    },
+  ],
+};
+
+const demoPreviousMatches: Record<string, any[]> = {
+  football: [
+    {
+      id: "p1",
+      teams: [
+        { id: "t7", name: "Bayern Munich", logo: "https://upload.wikimedia.org/wikipedia/commons/1/1b/FC_Bayern_M%C3%BCnchen_logo_%282017%29.svg", score: 4 },
+        { id: "t8", name: "Dortmund", logo: "https://upload.wikimedia.org/wikipedia/commons/6/67/Borussia_Dortmund_logo.svg", score: 2 }
+      ],
+      status: "ended" as const,
+      league: "Bundesliga"
+    },
+    {
+      id: "p2",
+      teams: [
+        { id: "t9", name: "Juventus", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a8/Juventus_FC_-_pictogram_black_%28Italy%2C_2017%29.svg", score: 2 },
+        { id: "t10", name: "AC Milan", logo: "https://upload.wikimedia.org/wikipedia/commons/d/d0/AC_Milan_logo.svg", score: 1 }
+      ],
+      status: "ended" as const,
+      league: "Serie A"
+    },
+    {
+      id: "p3",
+      teams: [
+        { id: "t11", name: "PSG", logo: "https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg", score: 3 },
+        { id: "t12", name: "Marseille", logo: "https://upload.wikimedia.org/wikipedia/commons/4/43/Olympique_de_Marseille_logo.svg", score: 0 }
+      ],
+      status: "ended" as const,
+      league: "Ligue 1"
+    },
+    {
+      id: "p4",
+      teams: [
+        { id: "t13", name: "Man City", logo: "https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg", score: 2 },
+        { id: "t14", name: "Tottenham", logo: "https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg", score: 2 }
+      ],
+      status: "ended" as const,
+      league: "Premier League"
+    },
+  ],
+  tennis: [
+    {
+      id: "pt1",
+      teams: [
+        { id: "tp1", name: "Sinner", logo: "https://via.placeholder.com/56?text=JS", score: 3 },
+        { id: "tp2", name: "Medvedev", logo: "https://via.placeholder.com/56?text=DM", score: 1 }
+      ],
+      status: "ended" as const,
+      league: "Australian Open Final"
+    },
+  ],
+  basketball: [
+    {
+      id: "pb1",
+      teams: [
+        { id: "bp1", name: "Celtics", logo: "https://via.placeholder.com/56?text=BOS", score: 112 },
+        { id: "bp2", name: "Heat", logo: "https://via.placeholder.com/56?text=MIA", score: 108 }
+      ],
+      status: "ended" as const,
+      league: "NBA Playoffs"
+    },
+  ],
+};
+
+const demoUpcomingMatches: Record<string, any[]> = {
+  football: [
+    {
+      id: "u1",
+      teams: [
+        { id: "ut1", name: "Inter Milan", logo: "https://upload.wikimedia.org/wikipedia/commons/0/05/FC_Internazionale_Milano_2021.svg", score: 0 },
+        { id: "ut2", name: "Roma", logo: "https://upload.wikimedia.org/wikipedia/en/f/f7/AS_Roma_logo_%282017%29.svg", score: 0 }
+      ],
+      status: "upcoming" as const,
+      league: "Serie A",
+      startTime: new Date(Date.now() + 3600000 * 2).toISOString()
+    },
+    {
+      id: "u2",
+      teams: [
+        { id: "ut3", name: "Newcastle", logo: "https://upload.wikimedia.org/wikipedia/en/5/56/Newcastle_United_Logo.svg", score: 0 },
+        { id: "ut4", name: "Aston Villa", logo: "https://upload.wikimedia.org/wikipedia/en/f/f9/Aston_Villa_FC_crest_%282016%29.svg", score: 0 }
+      ],
+      status: "upcoming" as const,
+      league: "Premier League",
+      startTime: new Date(Date.now() + 3600000 * 5).toISOString()
+    },
+    {
+      id: "u3",
+      teams: [
+        { id: "ut5", name: "Atletico", logo: "https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg", score: 0 },
+        { id: "ut6", name: "Sevilla", logo: "https://upload.wikimedia.org/wikipedia/en/3/3b/Sevilla_FC_logo.svg", score: 0 }
+      ],
+      status: "upcoming" as const,
+      league: "La Liga",
+      startTime: new Date(Date.now() + 3600000 * 24).toISOString()
+    },
+  ],
+  tennis: [
+    {
+      id: "ut1",
+      teams: [
+        { id: "utp1", name: "Federer", logo: "https://via.placeholder.com/56?text=RF", score: 0 },
+        { id: "utp2", name: "Nadal", logo: "https://via.placeholder.com/56?text=RN", score: 0 }
+      ],
+      status: "upcoming" as const,
+      league: "Exhibition Match",
+      startTime: new Date(Date.now() + 3600000 * 8).toISOString()
+    },
+  ],
+  basketball: [
+    {
+      id: "ub1",
+      teams: [
+        { id: "ubp1", name: "Bucks", logo: "https://via.placeholder.com/56?text=MIL", score: 0 },
+        { id: "ubp2", name: "Suns", logo: "https://via.placeholder.com/56?text=PHX", score: 0 }
+      ],
+      status: "upcoming" as const,
+      league: "NBA",
+      startTime: new Date(Date.now() + 3600000 * 4).toISOString()
+    },
+  ],
+};
+
+function getPrimaryInterest(): string {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("primaryInterest") || "football";
+  }
+  return "football";
+}
 
 export default function HomePage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<"live" | "previous">("live");
-  const [selectedSport, setSelectedSport] = useState<string>("all");
-  const [liveMatches, setLiveMatches] = useState(demoLiveMatches);
-  const [previousMatches, setPreviousMatches] = useState(demoPreviousMatches);
-  const [sports, setSports] = useState(defaultSports);
+  const [primarySport, setPrimarySport] = useState<string>("football");
+  const [sportName, setSportName] = useState<string>("Football");
+  const [liveMatches, setLiveMatches] = useState<any[]>([]);
+  const [previousMatches, setPreviousMatches] = useState<any[]>([]);
+  const [upcomingMatches, setUpcomingMatches] = useState<any[]>([]);
   const [featuredStream, setFeaturedStream] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -113,24 +234,32 @@ export default function HomePage() {
       return;
     }
 
+    const interest = getPrimaryInterest();
+    setPrimarySport(interest);
+    setSportName(sportDisplayNames[interest] || interest.charAt(0).toUpperCase() + interest.slice(1));
+
     const fetchData = async () => {
       try {
         // Fetch live matches
         const liveData = await matchesAPI.getLiveMatches();
         if (liveData?.data?.length > 0) {
-          setLiveMatches(liveData.data);
+          const filtered = liveData.data.filter((m: any) =>
+            m.sport?.slug === interest || m.teams?.some((t: any) => t.sport?.slug === interest)
+          );
+          setLiveMatches(filtered.length > 0 ? filtered : (demoLiveMatches[interest] || demoLiveMatches.football));
+        } else {
+          setLiveMatches(demoLiveMatches[interest] || demoLiveMatches.football);
         }
 
         // Fetch previous matches
         const prevData = await matchesAPI.getPreviousMatches();
         if (prevData?.data?.length > 0) {
-          setPreviousMatches(prevData.data);
-        }
-
-        // Fetch sports
-        const sportsData = await sportsAPI.getSports();
-        if (sportsData?.data?.length > 0) {
-          setSports(sportsData.data);
+          const filtered = prevData.data.filter((m: any) =>
+            m.sport?.slug === interest || m.teams?.some((t: any) => t.sport?.slug === interest)
+          );
+          setPreviousMatches(filtered.length > 0 ? filtered : (demoPreviousMatches[interest] || demoPreviousMatches.football));
+        } else {
+          setPreviousMatches(demoPreviousMatches[interest] || demoPreviousMatches.football);
         }
 
         // Fetch featured stream
@@ -138,8 +267,19 @@ export default function HomePage() {
         if (featured?.data?.[0]) {
           setFeaturedStream(featured.data[0]);
         }
+
+        // Fetch schedule (upcoming)
+        const schedData = await scheduleAPI.getSchedule({ sport: interest });
+        if (schedData?.data?.length > 0) {
+          setUpcomingMatches(schedData.data);
+        } else {
+          setUpcomingMatches(demoUpcomingMatches[interest] || demoUpcomingMatches.football);
+        }
       } catch (err) {
         console.log("Using demo data");
+        setLiveMatches(demoLiveMatches[interest] || demoLiveMatches.football);
+        setPreviousMatches(demoPreviousMatches[interest] || demoPreviousMatches.football);
+        setUpcomingMatches(demoUpcomingMatches[interest] || demoUpcomingMatches.football);
       } finally {
         setLoading(false);
       }
@@ -147,14 +287,6 @@ export default function HomePage() {
 
     fetchData();
   }, [router]);
-
-  const filteredLive = selectedSport === "all" 
-    ? liveMatches 
-    : liveMatches.filter(m => m.teams.some((t: any) => t.sport?.slug === selectedSport));
-
-  const filteredPrevious = selectedSport === "all" 
-    ? previousMatches 
-    : previousMatches.filter(m => m.teams.some((t: any) => t.sport?.slug === selectedSport));
 
   if (loading) {
     return (
@@ -171,37 +303,46 @@ export default function HomePage() {
       <div className="pt-20 sm:pt-24 pb-8 sm:pb-12 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto space-y-8 sm:space-y-12">
 
-          {/* Welcome Header */}
+          {/* Sport Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Welcome back!</h1>
-              <p className="text-gray-400 text-sm sm:text-base mt-1">Here&apos;s what&apos;s happening today</p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-cyan-400/20 rounded-lg flex items-center justify-center">
+                <Tv className="w-5 h-5 sm:w-6 sm:h-6 text-cyan-400" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-white">{sportName}</h1>
+                <p className="text-gray-400 text-sm sm:text-base">Your selected sport</p>
+              </div>
             </div>
-            <Link 
-              href="/interest" 
+            <Link
+              href="/profile"
               className="flex items-center gap-2 px-4 py-2 bg-cyan-500/20 text-cyan-400 rounded-full hover:bg-cyan-500/30 transition-all text-sm font-medium"
             >
-              <Star className="w-4 h-4" />
-              Edit Interests
+              <Calendar className="w-4 h-4" />
+              Change Sport
             </Link>
           </div>
 
-          {/* Main Video Player Section */}
+          {/* Featured Live Stream */}
           <section className="space-y-4">
             <div className="flex items-center gap-2 mb-2">
               <Flame className="w-5 h-5 text-red-400" />
               <h2 className="text-lg sm:text-xl font-bold text-white">Featured Live Stream</h2>
+              <span className="flex items-center gap-1.5 ml-auto">
+                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                <span className="text-red-400 text-xs font-bold uppercase">Live</span>
+              </span>
             </div>
             <div className="relative w-full aspect-video bg-gray-900 rounded-xl overflow-hidden">
               {featuredStream ? (
-                <VideoPlayer 
+                <VideoPlayer
                   src={featuredStream.streamUrl || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"}
                   poster={featuredStream.thumbnail}
                   autoPlay={false}
                   className="h-full"
                 />
               ) : (
-                <VideoPlayer 
+                <VideoPlayer
                   src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
                   poster="https://images.unsplash.com/photo-1629977007371-0ba395424741?w=1200&q=80"
                   autoPlay={false}
@@ -211,151 +352,114 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Sport Selector */}
-          <section>
-            <h2 className="text-lg sm:text-xl font-bold text-white mb-4">Select Sport</h2>
-            <div className="flex gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-2">
-              <button
-                onClick={() => setSelectedSport("all")}
-                className={`shrink-0 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full border text-sm font-medium transition-all ${
-                  selectedSport === "all"
-                    ? "border-cyan-400 bg-cyan-400/20 text-cyan-400"
-                    : "border-cyan-500/30 text-gray-300 hover:border-cyan-500/50"
-                }`}
-              >
-                All Sports
-              </button>
-              {sports.map((sport) => (
-                <button
-                  key={sport.id}
-                  onClick={() => setSelectedSport(sport.slug)}
-                  className={`shrink-0 flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full border text-sm font-medium transition-all ${
-                    selectedSport === sport.slug
-                      ? "border-cyan-400 bg-cyan-400/20 text-cyan-400"
-                      : "border-cyan-500/30 text-gray-300 hover:border-cyan-500/50"
-                  }`}
-                >
-                  <img src={sport.icon} alt="" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
-                  <span className="hidden sm:inline">{sport.name}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* Live & Previous Matches */}
-          <section>
-            {/* Tabs */}
-            <div className="flex items-center gap-4 sm:gap-6 mb-4 sm:mb-6 border-b border-cyan-500/20">
-              <button
-                onClick={() => setActiveTab("live")}
-                className={`pb-3 sm:pb-4 text-sm sm:text-base font-semibold transition-colors relative ${
-                  activeTab === "live" ? "text-cyan-400" : "text-gray-400 hover:text-white"
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                  Live Matches
-                </span>
-                {activeTab === "live" && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400" />
-                )}
-              </button>
-              <button
-                onClick={() => setActiveTab("previous")}
-                className={`pb-3 sm:pb-4 text-sm sm:text-base font-semibold transition-colors relative ${
-                  activeTab === "previous" ? "text-cyan-400" : "text-gray-400 hover:text-white"
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Previous Matches
-                </span>
-                {activeTab === "previous" && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-400" />
-                )}
-              </button>
-            </div>
-
-            {/* Matches Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {activeTab === "live" ? (
-                filteredLive.length > 0 ? (
-                  filteredLive.map((match) => (
-                    <MatchCard
-                      key={match.id}
-                      id={match.id}
-                      teams={match.teams}
-                      status={match.status}
-                      league={match.league}
-                      streamUrl={match.streamUrl}
-                    />
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-12 text-gray-400">
-                    <Trophy className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>No live matches for this sport right now</p>
-                  </div>
-                )
-              ) : (
-                filteredPrevious.length > 0 ? (
-                  filteredPrevious.map((match) => (
-                    <MatchCard
-                      key={match.id}
-                      id={match.id}
-                      teams={match.teams}
-                      status={match.status}
-                      league={match.league}
-                    />
-                  ))
-                ) : (
-                  <div className="col-span-full text-center py-12 text-gray-400">
-                    <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>No previous matches for this sport</p>
-                  </div>
-                )
-              )}
-            </div>
-          </section>
-
-          {/* Trending Highlights */}
+          {/* Live Matches */}
           <section>
             <div className="flex items-center justify-between mb-4 sm:mb-6">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-cyan-400" />
-                <h2 className="text-lg sm:text-xl font-bold text-white">Trending Highlights</h2>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Matches Streaming Now</h2>
+                </span>
               </div>
-              <Link href="#" className="flex items-center gap-1 text-cyan-400 text-sm hover:text-cyan-300 transition-colors">
-                View All <ChevronRight className="w-4 h-4" />
-              </Link>
+              <span className="text-gray-400 text-sm">{liveMatches.length} live</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="group relative rounded-xl overflow-hidden bg-[#0f1535] border border-cyan-500/20 hover:border-cyan-500/40 transition-all">
-                  <div className="aspect-video relative">
-                    <img 
-                      src={`https://images.unsplash.com/photo-${i === 1 ? '1629977007371-0ba395424741' : i === 2 ? '1728116693268-125c5d6ad9e2' : '1577223625816-7546f13df25d'}?w=600&q=80`}
-                      alt="Highlight"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                      <div className="w-12 h-12 bg-cyan-400/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Play className="w-6 h-6 text-[#0a0e27] ml-0.5" fill="currentColor" />
-                      </div>
-                    </div>
-                    <span className="absolute bottom-2 right-2 px-2 py-1 bg-black/70 text-white text-xs rounded">
-                      {i === 1 ? "3:45" : i === 2 ? "5:20" : "8:15"}
-                    </span>
-                  </div>
-                  <div className="p-3 sm:p-4">
-                    <h3 className="text-white text-sm font-medium truncate">
-                      {i === 1 ? "Premier League Best Goals" : i === 2 ? "F1 Monaco GP Highlights" : "Champions League Final"}
-                    </h3>
-                    <p className="text-gray-400 text-xs mt-1">{i === 1 ? "Football" : i === 2 ? "Formula 1" : "Football"} • {i === 1 ? "1.2M" : i === 2 ? "890K" : "2.5M"} views</p>
-                  </div>
-                </div>
-              ))}
+            {liveMatches.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {liveMatches.map((match) => (
+                  <MatchCard
+                    key={match.id}
+                    id={match.id}
+                    teams={match.teams}
+                    status={match.status}
+                    league={match.league}
+                    streamUrl={match.streamUrl}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-[#0f1535]/50 rounded-xl border border-cyan-500/20">
+                <Tv className="w-12 h-12 mx-auto mb-3 text-gray-500" />
+                <p className="text-gray-400">No live {sportName.toLowerCase()} matches right now</p>
+                <p className="text-gray-500 text-sm mt-1">Check back later or browse upcoming matches below</p>
+              </div>
+            )}
+          </section>
+
+          {/* Previous Matches */}
+          <section>
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="flex items-center gap-2">
+                <History className="w-5 h-5 text-cyan-400" />
+                <h2 className="text-lg sm:text-xl font-bold text-white">Previous Matches</h2>
+              </div>
             </div>
+
+            {previousMatches.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {previousMatches.map((match) => (
+                  <MatchCard
+                    key={match.id}
+                    id={match.id}
+                    teams={match.teams}
+                    status={match.status}
+                    league={match.league}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-gray-400">
+                <History className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>No previous matches to show</p>
+              </div>
+            )}
+          </section>
+
+          {/* Upcoming / Scheduled Matches */}
+          <section>
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="flex items-center gap-2">
+                <Timer className="w-5 h-5 text-cyan-400" />
+                <h2 className="text-lg sm:text-xl font-bold text-white">Upcoming Matches</h2>
+              </div>
+            </div>
+
+            {upcomingMatches.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {upcomingMatches.map((match) => (
+                  <MatchCard
+                    key={match.id}
+                    id={match.id}
+                    teams={match.teams}
+                    status={match.status}
+                    league={match.league}
+                    startTime={match.startTime}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-gray-400">
+                <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>No upcoming matches scheduled</p>
+              </div>
+            )}
+          </section>
+
+          {/* Discover More */}
+          <section className="bg-[#0f1535] border border-cyan-500/20 rounded-xl p-6 sm:p-8 text-center">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
+              Discover Other Sports
+            </h2>
+            <p className="text-gray-400 text-sm sm:text-base mb-4 max-w-lg mx-auto">
+              Want to explore highlights and matches from other sports? Visit the Categories page.
+            </p>
+            <Link
+              href="/categories"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-400 text-[#0a0e27] rounded-full font-semibold text-sm sm:text-base hover:bg-cyan-300 transition-colors"
+            >
+              Browse All Sports
+              <ChevronRight className="w-5 h-5" />
+            </Link>
           </section>
         </div>
       </div>
@@ -363,7 +467,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="py-6 sm:py-8 px-4 sm:px-6 border-t border-cyan-500/20 mt-8 sm:mt-12">
         <div className="max-w-7xl mx-auto text-center text-gray-500 text-xs sm:text-sm">
-          <p>© 2026 Free-Fit.com. All rights reserved.</p>
+          <p>&copy; 2026 Freefit.com. All rights reserved.</p>
         </div>
       </footer>
     </main>

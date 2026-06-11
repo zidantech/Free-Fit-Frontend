@@ -248,7 +248,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="py-6 sm:py-8 px-4 sm:px-6 border-t border-cyan-500/20">
         <div className="max-w-6xl mx-auto text-center text-gray-500 text-xs sm:text-sm">
-          <p>© 2026 Free-Fit.com. All rights reserved.</p>
+          <p>&copy; 2026 Freefit.com. All rights reserved.</p>
         </div>
       </footer>
     </main>

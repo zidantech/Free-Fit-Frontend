@@ -62,7 +62,7 @@ export default function SignUp() {
         </Link>
 
         <Link href="/" className="block text-2xl sm:text-3xl font-bold text-cyan-400 tracking-wide mb-6 sm:mb-8">
-          Free-fit.com
+          Freefit.com
         </Link>
 
         <div className="bg-[#0a0e27]/80 backdrop-blur-sm rounded-xl p-6 sm:p-8 border border-white/10">

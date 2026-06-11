@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { authAPI, userAPI, sportsAPI } from "@/lib/api";
 import SportSelector from "@/components/SportSelector";
 import { ArrowRight, Loader2 } from "lucide-react";
@@ -25,7 +26,7 @@ export default function InterestPage() {
   const router = useRouter();
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
   const [sports, setSports] = useState(defaultSports);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -65,12 +66,14 @@ export default function InterestPage() {
 
       // Also save to localStorage for quick access
       localStorage.setItem("interests", JSON.stringify(selectedSports));
+      localStorage.setItem("primaryInterest", selectedSports[0]);
 
       router.push("/home");
     } catch (err) {
       console.error("Failed to save interests:", err);
       // Still redirect even if API fails
       localStorage.setItem("interests", JSON.stringify(selectedSports));
+      localStorage.setItem("primaryInterest", selectedSports[0]);
       router.push("/home");
     } finally {
       setSaving(false);
@@ -92,11 +95,14 @@ export default function InterestPage() {
   return (
     <main className="min-h-screen bg-[#0a0e27] px-4 sm:px-6 py-8 sm:py-12">
       <div className="max-w-4xl mx-auto">
+        <Link href="/" className="text-2xl sm:text-3xl font-bold text-cyan-400 tracking-wide mb-6 sm:mb-8 block">
+          Freefit.com
+        </Link>
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4">
           Pick your interest
         </h1>
         <p className="text-gray-400 text-sm sm:text-base mb-8 sm:mb-12">
-          Select your favorite sports to get personalized content and recommendations
+          Select your favorite sports to get personalized content and recommendations. Your first selection will be your primary sport.
         </p>
 
         <SportSelector
@@ -135,7 +141,7 @@ export default function InterestPage() {
 
         {selectedSports.length > 0 && (
           <p className="mt-4 text-center text-cyan-400 text-sm">
-            {selectedSports.length} sport{selectedSports.length !== 1 ? "s" : ""} selected
+            <span className="font-semibold">{selectedSports[0]}</span> will be your primary sport ({selectedSports.length} total selected)
           </p>
         )}
       </div>

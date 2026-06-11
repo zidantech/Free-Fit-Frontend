@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Free-Fit.com - Live Sports Streaming",
+  title: "Freefit.com - Live Sports Streaming",
   description: "Stream the biggest matches and events from across the continent in HD",
 };
 

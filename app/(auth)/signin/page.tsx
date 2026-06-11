@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authAPI } from "@/lib/api";
+import { authAPI, userAPI } from "@/lib/api";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 
 export default function SignIn() {
@@ -25,7 +25,36 @@ export default function SignIn() {
       if (typeof window !== "undefined") {
         localStorage.setItem("remember_me", String(rememberMe));
       }
-      router.push(data.next || "/home");
+
+      // Fetch user profile to get interests
+      try {
+        const profile = await userAPI.getProfile();
+        if (profile?.data) {
+          localStorage.setItem("user", JSON.stringify(profile.data));
+
+          // Check if user has interests
+          if (profile.data.interests && profile.data.interests.length > 0) {
+            localStorage.setItem("interests", JSON.stringify(profile.data.interests));
+            localStorage.setItem("primaryInterest", profile.data.interests[0]);
+            router.push("/home");
+          } else {
+            // Redirect to interest selection for new users
+            router.push("/interest");
+          }
+        } else {
+          router.push(data.next || "/home");
+        }
+      } catch {
+        // If profile fetch fails, check localStorage for interests
+        const storedInterests = localStorage.getItem("interests");
+        if (storedInterests) {
+          const parsed = JSON.parse(storedInterests);
+          localStorage.setItem("primaryInterest", parsed[0] || "football");
+          router.push("/home");
+        } else {
+          router.push("/interest");
+        }
+      }
     } catch (err: any) {
       setError(err.message || "Login failed. Please check your credentials.");
     } finally {
