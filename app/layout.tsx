@@ -1,19 +1,26 @@
+// app/layout.tsx
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
+const inter = Inter({ subsets: ["latin"] });
+
 export const metadata: Metadata = {
-  title: "Freefit.com - Live Sports Streaming",
-  description: "Stream the biggest matches and events from across the continent in HD",
+  title: "Free-Fit.com - Live Sports Streaming",
+  description: "Stream live sports matches, watch highlights, and follow your favorite teams",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      {/* No pt-16 here — each page handles its own navbar spacing */}
+      <body className={`${inter.className} bg-[#0a0e27] text-white`}>
+        {children}
+      </body>
     </html>
   );
 }

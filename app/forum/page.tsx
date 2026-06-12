@@ -152,7 +152,7 @@ export default function ForumHubPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0e27] text-white">
+    <div className="min-h-screen bg-[#0a0e27] text-white pt-16 sm:pt-20">
       <Navbar />
 
       {/* Header */}

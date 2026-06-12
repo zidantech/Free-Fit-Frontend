@@ -2,7 +2,14 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Send, MessageCircle, User, Clock, ArrowLeft, Users } from "lucide-react";
+import {
+  Send,
+  MessageCircle,
+  User,
+  Clock,
+  ArrowLeft,
+  Users,
+} from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { useParams } from "next/navigation";
 
@@ -111,7 +118,7 @@ export default function ForumChatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0e27] text-white flex flex-col">
+    <div className="min-h-screen bg-[#0a0e27] text-white flex flex-col pt-16 sm:pt-20">
       <Navbar />
 
       {/* Header */}
@@ -146,7 +153,9 @@ export default function ForumChatPage() {
           {messages.length === 0 && (
             <div className="text-center py-16">
               <MessageCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-              <p className="text-gray-500">No messages yet. Start the conversation!</p>
+              <p className="text-gray-500">
+                No messages yet. Start the conversation!
+              </p>
             </div>
           )}
           {messages.map((msg) => (
